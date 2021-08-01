@@ -1,3 +1,14 @@
+const db = require('knex')({
+    client: 'pg',
+    connection: {
+      host : process.env.PGHOST,
+      user : process.env.PGUSER,
+      password : process.env.PGPASSWORD,
+      database : process.env.PGDATABASE
+    }
+});
+
+
 defResponse = {
     id : 9,                 // id занятия
     date: '2019-09-01',     // Дата занятия
@@ -19,6 +30,32 @@ defResponse = {
     ]
 }
 
+function getLessonsList(searchParams) {
+    // console.log(searchParams);
+    let answer = db.select('*').from('lessons').where((builder) => {
+        // builder.where('id', '>', 0); //Заглушка, чтобы дальше цеплять andWhere
+        // if (searchParams.date) builder.andWhere('date',searchParams.date);
+        // if (searchParams.status) builder.andWhere('status',searchParams.status);
+        if (searchParams.teacherIds)  {
+            builder.whereIn('id', function() {
+                this.select('lesson_id').from('lesson_teachers').whereIn('teacher_id',searchParams.teacherIds.split(','));
+            });
+        }
+        
+        // if (searchParams.teacherIds)  {
+        //     builder.andWhere((builder2) => {
+        //         builder2.whereIn('id', function() {
+        //             this.select('lesson_id').from('lesson_teachers').whereIn('teacher_id',searchParams.teacherIds.split(','));
+        //         });
+        //     });
+        // }
+    })
+    console.log(answer.toString());
+    return answer;
+}
+
+
+
 defRequest = {
     teacherIds: [1,2],      // id учителей, ведущих занятия
     title: 'Blue Ocean',    // Тема занятия. Одинаковая на все создаваемые занятия
@@ -29,8 +66,11 @@ defRequest = {
 }
 
 module.exports = {
-    defResponse,
-    defRequest
+    getLessonsList,
+    defRequest,
+    db
 }
+
+
     
     

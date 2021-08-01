@@ -1,11 +1,20 @@
 require('dotenv').config();
 const Koa = require('koa');
-var app = new Koa();
+// const cors = require('koa-cors');
+let app = new Koa();
 
 const { router } = require('./router.js');
-const { defRequest, defResponse } = require('./db.js'); // данные нужны для роутинга, поэтому импортируем их
 
+// const multer = require('koa-multer');
+// const bodyparser = require('koa-bodyparser');
 
+// app.use(cors({
+//     headers: ['Origin, X-Requested-With, Content-Type, Accept'],
+//     methods: ['GET', 'POST']
+// }));
+
+//app.use(bodyparser);
+//app.use(multer);
 
 app.use(router.routes())
 app.use(router.allowedMethods());
