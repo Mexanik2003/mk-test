@@ -89,38 +89,97 @@ function returnErr (err) {
 
 
 async function createLessons(lessonParams) {
-    let data = {};
+    let data = [];
 
     try {
-        // Даем приоритет параметру lessonsCount или создаем 1 урок при отсутсвии ограничений
-        if (lessonParams.lessonsCount) {
-            lessonParams.lastDate = new Date('9999-12-31');
+
+        if (!lessonParams.teacherIds) return returnErr({routine: "No teachers"});
+        if (!lessonParams.firstDate) return returnErr({routine: "No firstDate"});
+        if (!lessonParams.title) return returnErr({routine: "No title"});
+        if (!lessonParams.days) return returnErr({routine: "No days"});
+        if (!lessonParams.lastDate) lessonParams.lastDate = "'9999-12-31'";
+
+        // Даем приоритет параметру lessonsCount
+        if (!lessonParams.lessonsCount) {
+            lessonParams.lessonsCount = 300;
         } else {
-            if (!lessonParams.lastDate) {
-                lessonParams.lastDate = new Date('9999-12-31');
-                lessonParams.lessonsCount = 1;
-            } else {
-                lessonParams.lessonsCount = 300;
-            }
+            lessonParams.lastDate = "'9999-12-31'";
         }
 
-        let count = 1;
-        let lastLessonDate = new Date(lessonParams.firstDate);
-        const firstDate = new Date(lessonParams.firstDate);
-        console.log(lastLessonDate);
-        console.log(lessonParams.lastDate);
+        console.log('lessonParams');
+        console.log(lessonParams);
+
+        let firstDate = new Date;
+        if (!lessonParams.firstDate) {
+            firstDate = new Date();
+        } else {
+            firstDate = new Date(Date.parse(lessonParams.firstDate.substr(1,lessonParams.firstDate.length - 2) + 'T00:00:00.000Z'));
+        }
+        console.log('firstDate');
         console.log(firstDate);
-        console.log(lastLessonDate - lessonParams.firstDate);
-        while (
-            count <= lessonParams.lessonsCount &&
-            count <=300 &&
-            lastLessonDate <= lessonParams.lastDate &&
-            (lastLessonDate - firstDate) <= 365
-        ) {
 
-            console.log(count);
-            count++;
+        const lastDate = new Date(Date.parse(lessonParams.lastDate.substr(1,lessonParams.lastDate.length - 2) + 'T00:00:00.000Z'));
+        console.log('lastDate');
+        console.log(lastDate);
+        
+        let firstZeroDate = new Date;
+        cloneDate(firstDate, firstZeroDate);
+        firstZeroDate.setDate(firstZeroDate.getDate() - firstZeroDate.getDay());
+        let lastLessonDate = new Date;
+        cloneDate(firstZeroDate, lastLessonDate);
+        console.log('firstZeroDate');
+        console.log(firstZeroDate);
+        console.log('lastLessonDate');
+        console.log(lastLessonDate);
+
+        // console.log(lessonParams.firstDate);
+        // lastLessonDate.setDate(firstDate.getDate() + 2);
+        // console.log(lastLessonDate);
+        // console.log((+lastLessonDate - +firstDate)/86400/1000);
+        // console.log('---');
+        // console.log(firstDate);
+        // console.log(firstDate.getDay());
+        // firstDate.setDate(firstDate.getDate() - firstDate.getDay());
+        // console.log(firstDate);
+        // console.log(firstDate.getDay());
+        // console.log('---');
+
+        let days = JSON.parse(lessonParams.days);
+        let count = 1;
+        let week = 0;
+        let lessonsArr = [];
+        while (validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate)) {
+            console.log('------');
+            console.log('Week: ' + week);
+            console.log('firstZeroDate');
+            cloneDate(firstZeroDate, lastLessonDate);
+            console.log(firstZeroDate);
+            console.log(lastLessonDate);
+            days.forEach((day) => {
+                lastLessonDate.setDate(firstDate.getDate() + +day);
+                if (
+                    validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate) && 
+                    firstDate <= lastLessonDate
+                ) {
+                    console.log('day of week: ' + day);
+                    console.log('lesson ord: ' + count);
+                    console.log(lastLessonDate);
+                    lessonsArr.push({
+                        title: lessonParams.title,
+                        date:  lastLessonDate.getUTCFullYear() + '-' + ('0' + (lastLessonDate.getUTCMonth()+1)).slice(-2) + '-' + ('0' + lastLessonDate.getUTCDate()).slice(-2),
+                       status: 0,
+                        teacherIds: JSON.parse(lessonParams.teacherIds)
+                    })
+                    addNewLesson();
+                    count++;
+                }
+            });
+
+            week++;
+            firstZeroDate.setDate(firstZeroDate.getDate() + 7);
         }
+
+        data = lessonsArr;
         
 
         // for (let i = 0; i < lessonParams.lessonsCount; i++) {
@@ -140,6 +199,34 @@ async function createLessons(lessonParams) {
     return answer;
 
 }
+
+function cloneDate (dateFrom, dateTo) {
+    dateTo.setUTCFullYear(dateFrom.getUTCFullYear());
+    dateTo.setUTCMonth(dateFrom.getUTCMonth());
+    dateTo.setUTCDate(dateFrom.getUTCDate());
+    dateTo.setUTCHours(dateFrom.getUTCHours());
+    dateTo.setUTCMinutes(dateFrom.getUTCMinutes());
+    dateTo.setUTCSeconds(dateFrom.getUTCSeconds());
+    dateTo.setUTCMilliseconds(dateFrom.getUTCMilliseconds());
+}
+
+function addNewLesson (lesson) {
+
+}
+
+function validateLessonDate (count, lessonsCount, lastLessonDate, lastDate, firstDate) {
+    if (
+        count <= lessonsCount &&
+        count <=300 &&
+        lastLessonDate <= lastDate &&
+        (+lastLessonDate - +firstDate)/86400000 <= 365
+    ) {
+        return true;
+    }
+
+}
+
+function convertDateToUTC(date) { return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), date.getUTCHours(), date.getUTCMinutes(), date.getUTCSeconds()); }
 
 
 
