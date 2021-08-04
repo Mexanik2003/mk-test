@@ -1,4 +1,4 @@
-const { getLessonsList, defResponse} = require('../db');
+const { getLessonsList, createLessons} = require('../db');
 
 
 const getData = async (ctx, next) =>  {
@@ -10,7 +10,9 @@ const getData = async (ctx, next) =>  {
 }
 
 const setData = async (ctx, next) =>  {
-    ctx.body = defResponse;
+    const result = await createLessons(ctx.request.query);
+    ctx.status = result.status;
+    ctx.body = result.data;
     next();
 }
 

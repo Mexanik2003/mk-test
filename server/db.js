@@ -88,19 +88,64 @@ function returnErr (err) {
 
 
 
-defRequest = {
-    teacherIds: [1,2],      // id учителей, ведущих занятия
-    title: 'Blue Ocean',    // Тема занятия. Одинаковая на все создаваемые занятия
-    days: [0,1,3,6],        // Дни недели, по которым нужно создать занятия, где 0 - это воскресенье
-    firstDate: '2019-09-10',// Первая дата, от которой нужно создавать занятия
-    lessonsCount: 9,        // Количество занятий для создания
-    lastDate: '2019-12-31', // Последняя дата, до которой нужно создавать занятия.
+async function createLessons(lessonParams) {
+    let data = {};
+
+    try {
+        // Даем приоритет параметру lessonsCount или создаем 1 урок при отсутсвии ограничений
+        if (lessonParams.lessonsCount) {
+            lessonParams.lastDate = new Date('9999-12-31');
+        } else {
+            if (!lessonParams.lastDate) {
+                lessonParams.lastDate = new Date('9999-12-31');
+                lessonParams.lessonsCount = 1;
+            } else {
+                lessonParams.lessonsCount = 300;
+            }
+        }
+
+        let count = 1;
+        let lastLessonDate = new Date(lessonParams.firstDate);
+        const firstDate = new Date(lessonParams.firstDate);
+        console.log(lastLessonDate);
+        console.log(lessonParams.lastDate);
+        console.log(firstDate);
+        console.log(lastLessonDate - lessonParams.firstDate);
+        while (
+            count <= lessonParams.lessonsCount &&
+            count <=300 &&
+            lastLessonDate <= lessonParams.lastDate &&
+            (lastLessonDate - firstDate) <= 365
+        ) {
+
+            console.log(count);
+            count++;
+        }
+        
+
+        // for (let i = 0; i < lessonParams.lessonsCount; i++) {
+        //     const data = await db('lessons').insert({
+        //         date: '2000-01-01',
+        //         title: lessonParams.title.substr(1,lessonParams.title.length - 2),
+        //         status: '1'
+        //     });
+        // }
+    } catch (err) {
+        return returnErr (err);
+    }
+
+    const answer = {};
+    answer.data = data;
+    answer.status = 200;
+    return answer;
+
 }
+
+
 
 module.exports = {
     getLessonsList,
-    defRequest,
-    db
+    createLessons
 }
 
 
