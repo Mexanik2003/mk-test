@@ -86,7 +86,16 @@ function returnErr (err) {
     return result;
 }
 
+async function _createLessons(lessonParams) {
+    let data = [];
 
+
+    const answer = {};
+    answer.data = data;
+    answer.status = 200;
+    return answer;
+
+}
 
 async function createLessons(lessonParams) {
     let data = [];
@@ -97,80 +106,47 @@ async function createLessons(lessonParams) {
         if (!lessonParams.firstDate) return returnErr({routine: "No firstDate"});
         if (!lessonParams.title) return returnErr({routine: "No title"});
         if (!lessonParams.days) return returnErr({routine: "No days"});
-        if (!lessonParams.lastDate) lessonParams.lastDate = "'9999-12-31'";
+        if (!lessonParams.lastDate) lessonParams.lastDate = "9999-12-31";
 
         // Даем приоритет параметру lessonsCount
         if (!lessonParams.lessonsCount) {
             lessonParams.lessonsCount = 300;
         } else {
-            lessonParams.lastDate = "'9999-12-31'";
+            lessonParams.lastDate = "9999-12-31";
         }
-
-        console.log('lessonParams');
-        console.log(lessonParams);
 
         let firstDate = new Date;
         if (!lessonParams.firstDate) {
             firstDate = new Date();
         } else {
-            firstDate = new Date(Date.parse(lessonParams.firstDate.substr(1,lessonParams.firstDate.length - 2) + 'T00:00:00.000Z'));
+            firstDate = new Date(Date.parse(lessonParams.firstDate + 'T00:00:00.000Z'));
         }
-        console.log('firstDate');
-        console.log(firstDate);
 
-        const lastDate = new Date(Date.parse(lessonParams.lastDate.substr(1,lessonParams.lastDate.length - 2) + 'T00:00:00.000Z'));
-        console.log('lastDate');
-        console.log(lastDate);
+        const lastDate = new Date(Date.parse(lessonParams.lastDate + 'T00:00:00.000Z'));
         
         let firstZeroDate = new Date;
         cloneDate(firstDate, firstZeroDate);
         firstZeroDate.setDate(firstZeroDate.getDate() - firstZeroDate.getDay());
         let lastLessonDate = new Date;
         cloneDate(firstZeroDate, lastLessonDate);
-        console.log('firstZeroDate');
-        console.log(firstZeroDate);
-        console.log('lastLessonDate');
-        console.log(lastLessonDate);
 
-        // console.log(lessonParams.firstDate);
-        // lastLessonDate.setDate(firstDate.getDate() + 2);
-        // console.log(lastLessonDate);
-        // console.log((+lastLessonDate - +firstDate)/86400/1000);
-        // console.log('---');
-        // console.log(firstDate);
-        // console.log(firstDate.getDay());
-        // firstDate.setDate(firstDate.getDate() - firstDate.getDay());
-        // console.log(firstDate);
-        // console.log(firstDate.getDay());
-        // console.log('---');
-
-        let days = JSON.parse(lessonParams.days);
+        let days = lessonParams.days;
         let count = 1;
         let week = 0;
         let lessonsArr = [];
         while (validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate)) {
-            console.log('------');
-            console.log('Week: ' + week);
-            console.log('firstZeroDate');
             cloneDate(firstZeroDate, lastLessonDate);
-            console.log(firstZeroDate);
-            console.log(lastLessonDate);
             days.forEach((day) => {
                 lastLessonDate.setDate(firstDate.getDate() + +day);
                 if (
                     validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate) && 
                     firstDate <= lastLessonDate
                 ) {
-                    console.log('day of week: ' + day);
-                    console.log('lesson ord: ' + count);
-                    console.log(lastLessonDate);
                     lessonsArr.push({
                         title: lessonParams.title,
                         date:  lastLessonDate.getUTCFullYear() + '-' + ('0' + (lastLessonDate.getUTCMonth()+1)).slice(-2) + '-' + ('0' + lastLessonDate.getUTCDate()).slice(-2),
-                       status: 0,
-                        teacherIds: JSON.parse(lessonParams.teacherIds)
-                    })
-                    addNewLesson();
+                        status: 0,
+                    });
                     count++;
                 }
             });
@@ -181,17 +157,25 @@ async function createLessons(lessonParams) {
 
         data = lessonsArr;
         
-
-        // for (let i = 0; i < lessonParams.lessonsCount; i++) {
-        //     const data = await db('lessons').insert({
-        //         date: '2000-01-01',
-        //         title: lessonParams.title.substr(1,lessonParams.title.length - 2),
-        //         status: '1'
-        //     });
-        // }
     } catch (err) {
         return returnErr (err);
     }
+
+    let lessonTeacherArr = [];
+    const lessonsIds = await db.insert(data).returning('id').into('lessons');
+
+    if (lessonParams.teacherIds) {
+        lessonsIds.forEach((lesson) => {
+            lessonParams.teacherIds.forEach((teacher) => {
+                lessonTeacherArr.push({
+                    lesson_id: lesson,
+                    teacher_id: teacher
+                })
+            })
+        });
+    }
+
+    await db.insert(lessonTeacherArr).into('lesson_teachers');
 
     const answer = {};
     answer.data = data;
