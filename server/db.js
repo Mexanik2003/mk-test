@@ -178,7 +178,7 @@ async function createLessons(lessonParams) {
     await db.insert(lessonTeacherArr).into('lesson_teachers');
 
     const answer = {};
-    answer.data = data;
+    answer.data = lessonsIds;
     answer.status = 200;
     return answer;
 
