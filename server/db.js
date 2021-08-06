@@ -6,10 +6,10 @@ const db = require('knex')({
       host : process.env.PGHOST,
       user : process.env.PGUSER,
       password : process.env.PGPASSWORD,
-      database : process.env.PGDATABASE
+      database : process.env.PGDATABASE,
+      multipleStatements: true
     }
 });
-
 
 async function getLessonsList(searchParams) {
     if (!searchParams.page) {searchParams.page = 1}
@@ -77,7 +77,8 @@ async function getLessonsList(searchParams) {
             //console.log(key);
         }
 
-        } catch (err) {
+
+    } catch (err) {
         return returnErr (err);
     }
     const answer = {};
@@ -163,6 +164,7 @@ async function createLessons(lessonParams) {
         }
 
         data = lessonsArr;
+
         
     } catch (err) {
         return returnErr (err);
@@ -171,6 +173,12 @@ async function createLessons(lessonParams) {
     let lessonTeacherArr = [];
     const lessonsIds = await db.insert(data).returning('id').into('lessons');
 
+    if (process.env.NODE_ENV === 'test') {
+        await db('lessons')
+            .whereIn('id', lessonsIds)
+            .del();
+    }
+    
     if (lessonParams.teacherIds) {
         lessonsIds.forEach((lesson) => {
             lessonParams.teacherIds.forEach((teacher) => {
@@ -181,8 +189,10 @@ async function createLessons(lessonParams) {
             })
         });
     }
-
-    await db.insert(lessonTeacherArr).into('lesson_teachers');
+    
+    if (process.env.NODE_ENV !== 'test') {
+        await db.insert(lessonTeacherArr).into('lesson_teachers');
+    }
 
     const answer = {};
     answer.data = lessonsIds;
@@ -223,7 +233,7 @@ function convertDateToUTC(date) { return new Date(date.getUTCFullYear(), date.ge
 
 module.exports = {
     getLessonsList,
-    createLessons
+    createLessons,
 }
 
 
