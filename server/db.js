@@ -1,3 +1,5 @@
+const { isNumber } = require('lodash');
+
 const db = require('knex')({
     client: 'pg',
     connection: {
@@ -38,7 +40,12 @@ async function getLessonsList(searchParams) {
             if (searchParams.status) builder.andWhere('status',searchParams.status);
             if (searchParams.teacherIds)  {
                 builder.whereIn('id', function() {
-                    this.select('lesson_id').from('lesson_teachers').whereIn('teacher_id',searchParams.teacherIds.split(','));
+                    const teachersIdsArr = searchParams.teacherIds.toString().split(",");
+                    if (teachersIdsArr) {
+                        this.select('lesson_id').from('lesson_teachers').whereIn('teacher_id',teachersIdsArr);
+                    } else {
+                        this.select('lesson_id').from('lesson_teachers').where('teacher_id',searchParams.teacherIds);
+                    }
                 });
             }
             if (searchParams.studentsCount) {
@@ -70,7 +77,7 @@ async function getLessonsList(searchParams) {
             //console.log(key);
         }
 
-    } catch (err) {
+        } catch (err) {
         return returnErr (err);
     }
     const answer = {};
