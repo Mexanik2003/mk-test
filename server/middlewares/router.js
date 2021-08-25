@@ -2,7 +2,7 @@ const { getLessonsList, createLessons} = require('../db');
 
 
 const getData = async (ctx, next) =>  {
-    const result = await getLessonsList(ctx.request.body);
+    const result = await getLessonsList(ctx.request.query);
     ctx.status = result.status;
     ctx.body = result.data;
     next();

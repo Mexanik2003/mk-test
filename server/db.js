@@ -1,5 +1,9 @@
 const { isNumber } = require('lodash');
 
+var types = require('pg').types;
+// override parsing date column to Date()
+types.setTypeParser(1082, val => val); 
+
 const db = require('knex')({
     client: 'pg',
     connection: {
@@ -63,7 +67,8 @@ async function getLessonsList(searchParams) {
                     });
                 }
             }
-        });
+        })//.toString();
+        //console.log(data);
 
         for (key in data) {
             let query = await db.select('st.*', 'ls.visit').from({st: 'students', ls: 'lesson_students'})
@@ -189,7 +194,7 @@ async function createLessons(lessonParams) {
             })
         });
     }
-    
+
     if (process.env.NODE_ENV !== 'test') {
         await db.insert(lessonTeacherArr).into('lesson_teachers');
     }

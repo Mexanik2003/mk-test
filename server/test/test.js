@@ -20,17 +20,9 @@ describe('/GET lessons', () => {
         });
     });
     it('all params', (done) => {
-        const params = {
-            "date": "2019-06-17",
-            "status": 1,
-            "teacherIds": "1,4",
-            "studentsCount": "1,4",
-            "page": 1,
-            "lessonsPerPage": 10
-        };
+        const params = 'date=2019-06-17&status=1&teacherIds=1,4&studentsCount=1,4&page=1&lessonsPerPage=10';
         chai.request(server)
-            .get('/')
-            .send(params)
+            .get('/?'+params)
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('array');
@@ -39,12 +31,9 @@ describe('/GET lessons', () => {
         });
     });
     it('between two dates', (done) => {
-        const params = {
-            "date": "2019-06-17,2019-09-03"
-        };
+        const params = 'date=2019-06-17,2019-09-03';
         chai.request(server)
-            .get('/')
-            .send(params)
+            .get('/?'+params)
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('array');
@@ -54,12 +43,9 @@ describe('/GET lessons', () => {
     });
     
     it('between two dates vise verse', (done) => {
-        const params = {
-            "date": "2019-09-03,2019-06-17"
-        };
+        const params = 'date=2019-09-03,2019-06-17';
         chai.request(server)
-            .get('/')
-            .send(params)
+            .get('/?'+params)
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('array');
@@ -69,16 +55,9 @@ describe('/GET lessons', () => {
     });
     
     it('teachersId array', (done) => {
-        const params = {
-            "status": 1,
-            "teacherIds": "1,4",
-            "studentsCount": "1,4",
-            "page": 1,
-            "lessonsPerPage": 10
-        };
+        const params = 'status=1&teacherIds=1,4&studentsCount=1,4&page=1&lessonsPerPage=10';
         chai.request(server)
-            .get('/')
-            .send(params)
+            .get('/?'+params)
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('array');
@@ -88,16 +67,9 @@ describe('/GET lessons', () => {
     });
     
     it('teachersId is one integer', (done) => {
-        const params = {
-            "status": 1,
-            "teacherIds": "4",
-            "studentsCount": "1,4",
-            "page": 1,
-            "lessonsPerPage": 10
-        };
+        const params = 'status=1&teacherIds=4&studentsCount=1,4&page=1&lessonsPerPage=10';
         chai.request(server)
-            .get('/')
-            .send(params)
+            .get('/?'+params)
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('array');
@@ -107,16 +79,9 @@ describe('/GET lessons', () => {
     });
     
     it('pagination', (done) => {
-        const params = {
-            "status": 1,
-            "teacherIds": "1,4",
-            "studentsCount": "1,4",
-            "page": 2,
-            "lessonsPerPage": 2
-        };
+        const params = 'status=1&teacherIds=1,4&studentsCount=1,4&page=2&lessonsPerPage=2';
         chai.request(server)
-            .get('/')
-            .send(params)
+            .get('/?'+params)
             .end((err, res) => {
                 res.should.have.status(200);
                 res.body.should.be.a('array');
