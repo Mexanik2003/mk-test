@@ -148,12 +148,25 @@ async function createLessons(lessonParams) {
         let week = 0;
         let lessonsArr = [];
         while (validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate)) {
-            cloneDate(firstZeroDate, lastLessonDate);
+            await cloneDate(firstZeroDate, lastLessonDate);
             days.forEach((day) => {
-                lastLessonDate.setDate(firstDate.getDate() + +day);
-                if (
+                lastLessonDate.setDate(firstZeroDate.getDate() + +day);
+                console.log('-----')
+                console.log(count)
+                console.log(day)
+                console.log(lessonParams.lessonsCount)
+                console.log(lastLessonDate)
+                console.log(+lastLessonDate)
+                console.log(lastDate)
+                console.log(validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate))
+                console.log(firstDate)
+                console.log(+firstDate)
+                console.log(lastDate)
+                console.log(firstZeroDate)
+                console.log((+lastLessonDate - +firstDate)/86400000)
+               if (
                     validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate) && 
-                    firstDate <= lastLessonDate
+                    firstZeroDate <= lastLessonDate
                 ) {
                     lessonsArr.push({
                         title: lessonParams.title,
@@ -163,7 +176,7 @@ async function createLessons(lessonParams) {
                     count++;
                 }
             });
-
+            lastLessonDate.setDate(0);
             week++;
             firstZeroDate.setDate(firstZeroDate.getDate() + 7);
         }
@@ -174,6 +187,7 @@ async function createLessons(lessonParams) {
     } catch (err) {
         return returnErr (err);
     }
+
 
     let lessonTeacherArr = [];
     const lessonsIds = await db.insert(data).returning('id').into('lessons');
@@ -206,7 +220,7 @@ async function createLessons(lessonParams) {
 
 }
 
-function cloneDate (dateFrom, dateTo) {
+async function cloneDate (dateFrom, dateTo) {
     dateTo.setUTCFullYear(dateFrom.getUTCFullYear());
     dateTo.setUTCMonth(dateFrom.getUTCMonth());
     dateTo.setUTCDate(dateFrom.getUTCDate());
@@ -228,6 +242,8 @@ function validateLessonDate (count, lessonsCount, lastLessonDate, lastDate, firs
         (+lastLessonDate - +firstDate)/86400000 <= 365
     ) {
         return true;
+    } else {
+        return false;
     }
 
 }
