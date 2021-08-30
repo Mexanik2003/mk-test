@@ -150,21 +150,9 @@ async function createLessons(lessonParams) {
         while (validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate)) {
             await cloneDate(firstZeroDate, lastLessonDate);
             days.forEach((day) => {
-                lastLessonDate.setDate(firstZeroDate.getDate() + +day);
-                console.log('-----')
-                console.log(count)
-                console.log(day)
-                console.log(lessonParams.lessonsCount)
-                console.log(lastLessonDate)
-                console.log(+lastLessonDate)
-                console.log(lastDate)
-                console.log(validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate))
-                console.log(firstDate)
-                console.log(+firstDate)
-                console.log(lastDate)
-                console.log(firstZeroDate)
-                console.log((+lastLessonDate - +firstDate)/86400000)
-               if (
+                cloneDate(firstZeroDate, lastLessonDate);
+                lastLessonDate.setDate(firstZeroDate.getDate() + day);
+                if (
                     validateLessonDate (count, lessonParams.lessonsCount, lastLessonDate, lastDate, firstDate) && 
                     firstZeroDate <= lastLessonDate
                 ) {
